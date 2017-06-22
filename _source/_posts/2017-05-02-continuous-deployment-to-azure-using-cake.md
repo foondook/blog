@@ -78,7 +78,7 @@ I add a new PowerShell build action and call the build.ps1 inside. The build.ps1
 .\build.ps1 -c=release -buildnumber=@ENV.BUILD_NUMBER
 ~~~
 
-
+In the build script itself it doesn't really matter where the arguments came from. We just need to know whether to read them from the command line arguments or from the environment variables.
 
 ## The build script
 
