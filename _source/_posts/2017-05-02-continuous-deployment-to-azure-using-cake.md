@@ -11,7 +11,9 @@ tags:
 - Deployment
 ---
 
-This post is an update of a previous blog post. Instead of FAKE, I use CAKE in this version.
+This post is an update of a previous blog post about automatically deploy an Web App to Azure App Service using FAKE. But instead of FAKE, I'm non going to use CAKE.
+
+### Intro
 
 Deploying a web site continuously to an Azure Web App is pretty easy today. Just click "Set up deployment from source control" and select the source code provider you want to use and continue to log-on to your provider and select the right repository. 
 
@@ -33,6 +35,8 @@ How can I run my unit tests? What about email notifications on broken build? Wha
 
 You can [add a batch or a powershell file](https://github.com/projectkudu/kudu/wiki/Customizing-deployments) to manipulate Kudu process to do all this things. But there is too much to configure. I have to write my own scripts to change the AssemblyInfos, to send out any email notification, to create test reports and so on. I would write all the things, a real build server can already do for me.
 
+## Why a build server?
+
 I prefer to have a separate real build server which does the whole job. This are almost all tasks I usually need to do on a continuous deployment job: 
 
 - I need to restore the packages first to make the builds baster
@@ -51,11 +55,32 @@ I prefer to have a separate real build server which does the whole job. This are
 
 I prefer [Jenkins](https://jenkins-ci.org/) as a build server but this doesn't really matter. Any other real build server can also do this this work.
 
-To reduce the complexity on the build server itself, it only only does the scheduling and reporting part. The only thing it executes is a small batch file which calls a [FAKE script](http://fsharp.github.io/FAKE/). Since a while FAKE gets my favorite build script language. FAKE is an easy to use DSL for build task written in F#. MsBuild also works fine, but it is not as easy as FAKE. I used MsBuild in the past to do the same thing.
+## What is CAKE?
 
-In my case Jenkins only fetches the sources, executes the FAKE script and does the reporting and notification stuff.
+I recently wrote a small introduction about CAKE in that post.
 
-FAKE does the other tasks including the deployment. I only want to show how the deployment looks like with FAKE. Please see the FAKE documentation to learn more about the other tasks it. There are many examples and a sample script online. 
+## Using CAKE
+
+To reduce the complexity on the build server itself, it only only does the scheduling and reporting part and it clones the sources from the repository. The only thing it really executes is a small PowerShell file which calls the [CAKE script](http://cakebuild.net). Since a few months CAKE gets my favorite build script language. CAKE is an easy to use DSL for build task written in C# Script. MsBuild also works fine, but it is not as easy as CAKE. I used MsBuild in the past to do the same thing.
+
+> In my case Jenkins only fetches the sources, executes the CAKE script and does the reporting and notification stuff.
+
+CAKE does the other tasks including the deployment. I only want to show how the deployment looks like with CAKE. Please have a look into the [CAKE documentation](http://cakebuild.net/dsl/) to learn more about it. There are many examples and a sample script online. 
+
+I add a new PowerShell build action and call the build.ps1 inside. The build.ps1 bootstraps CAKE loads the needed dependencies and finally starts the build.cake file, which is the actual build script. I pass arguments to the script in two different ways:
+
+* CAKE specific arguments like the build configuration, build number will be passed as command line arguments
+* Build specific arguments gets passed as environment variables. This makes the PowerShell build action on the build server more readable. Otherwise the call of the build.ps1 could get too long and hard to maintain.
+
+~~~ powershell
+@ENV.PUBLISH_PROFILE = ""
+@ENV.PUBLISH_PASSWORD = ""
+.\build.ps1 -c=release -buildnumber=@ENV.BUILD_NUMBER
+~~~
+
+
+
+## The build script
 
 This is how the build task to deploy a ASP.NET app in FAKE looks like
 
