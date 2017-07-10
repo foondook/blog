@@ -1,6 +1,6 @@
 ---
 layout: page
-title: About me and about this blog
+title: About me and this blog
 author: Jürgen Gutsch
 comments: false
 ---
