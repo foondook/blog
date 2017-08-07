@@ -1,11 +1,11 @@
 ---
 layout: page
-title: Printed articels
+title: I'm writing...
 author: Jürgen Gutsch
 comments: false
 ---
 
-Not all the stuff I write gets published in this blog. Sometimes I write articles for printed developer Magazines. This is a list of my published printed Articles in the German .NET Magazines:
+Not all the stuff I write, gets published in this blog. Sometimes I write articles for printed developer Magazines. This is a list of my published printed Articles in the German .NET Magazines:
 
 ## dotnet Pro
 
