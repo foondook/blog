@@ -11,7 +11,7 @@ tags:
 - Deployment
 ---
 
-This post is an update of a previous blog post about automatically deploy an Web App to Azure App Service using FAKE. But instead of FAKE, I'm non going to use CAKE.
+This post is an update of a previous blog post about automatically deploy an Web App to Azure App Service using FAKE. But instead of FAKE, I'm now going to use CAKE.
 
 ### Intro
 
@@ -27,7 +27,7 @@ You will find a more detailed tutorial here: [Continuous deployment using GIT in
 
 This is pretty cool, isn't it?
 
-Sure, it is. But only if it is a small website, a small uncritical app or a demo to show the easy deployment to azure. The deployment of this Blog is set up in this way. With this kind of deployment, the build of the application is done on the Azure Web App with [Kudu](https://github.com/projectkudu/kudu) which is working great. 
+Sure, it is. But only if it is a small website, a small uncritical app or a demo to show the easy deployment to azure. The deployment of this blog is set up in this way. With this kind of deployment, the build of the application is done on the Azure Web App with [Kudu](https://github.com/projectkudu/kudu) which is working great. 
 
 But I miss something here, if I want to deploy bigger and more complex web application.
 
@@ -61,7 +61,7 @@ I recently wrote a small introduction about CAKE in that post.
 
 ## Using CAKE
 
-To reduce the complexity on the build server itself, it only only does the scheduling and reporting part and it clones the sources from the repository. The only thing it really executes is a small PowerShell file which calls the [CAKE script](http://cakebuild.net). Since a few months CAKE gets my favorite build script language. CAKE is an easy to use DSL for build task written in C# Script. MsBuild also works fine, but it is not as easy as CAKE. I used MsBuild in the past to do the same thing.
+To reduce the complexity on the build server itself, it only does the scheduling and reporting part and it clones the sources from the repository. The only thing it really executes is a small PowerShell file which calls the [CAKE script](http://cakebuild.net). Since a few months CAKE gets my favorite build script language. CAKE is an easy to use DSL for build task written in C# Script. MsBuild also works fine, but it is not as easy as CAKE. I used MsBuild in the past to do the same thing.
 
 > In my case Jenkins only fetches the sources, executes the CAKE script and does the reporting and notification stuff.
 
