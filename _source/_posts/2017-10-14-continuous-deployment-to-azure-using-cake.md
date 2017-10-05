@@ -67,7 +67,7 @@ To reduce the complexity on the build server itself, it only does the scheduling
 
 CAKE does the other tasks including the deployment. I only want to show how the deployment looks like with CAKE. Please have a look into the [CAKE documentation](http://cakebuild.net/dsl/) to learn more about it. There are many examples and a sample script online. 
 
-I add a new PowerShell build action and call the build.ps1 inside. The build.ps1 bootstraps CAKE loads the needed dependencies and finally starts the build.cake file, which is the actual build script. I pass arguments to the script in two different ways:
+I add a new PowerShell build action on the Build Server and call the build.ps1 inside. The build.ps1 bootstraps CAKE loads the needed dependencies and finally starts the build.cake file, which is the actual build script. I pass arguments to the script in two different ways:
 
 * CAKE specific arguments like the build configuration, build number will be passed as command line arguments
 * Build specific arguments gets passed as environment variables. This makes the PowerShell build action on the build server more readable. Otherwise the call of the build.ps1 could get too long and hard to maintain.
@@ -78,7 +78,7 @@ I add a new PowerShell build action and call the build.ps1 inside. The build.ps1
 .\build.ps1 -c=release -buildnumber=@ENV.BUILD_NUMBER
 ~~~
 
-In the build script itself it doesn't really matter where the arguments came from. We just need to know whether to read them from the command line arguments or from the environment variables.
+In the build script itself, it doesn't really matter where the arguments came from. We just need to know whether to read them from the command line arguments or from the environment variables.
 
 ## The build script
 
@@ -102,7 +102,7 @@ Target "PackageAndDeployWebApp" (fun _ ->
 )
 ~~~
 
-The parameter listed here are MsBuild properties. This all looks like a usual MsBuild call with FAKE and it really is a simple MsBuild call. Only the last four parameters are responsible to deploy the web app.
+The parameter listed here are MsBuild properties. This all looks like a usual MsBuild call with CAKE and it really is a simple MsBuild call. Only the last four parameters are responsible to deploy the web app.
 
 We need to add a publish profile to our project. To get this you have to download the deployment settings from the web apps dashboard on Azure. After the download you need to import the settings file to the publish profiles in Visual Studio. Don't save the downloaded file to the repository because it contains the publish password. The publish profile will be saved in the web apps properties folder. Just use the file name of the publish profile here, not the entire path. I pass the profile name from Jenkins to the script, because this script should be as generic as possible and should be used to deploy to development, to staging and to production environments.
 The publish password is also passed from Jenkins to the FAKE script, because we don't wont to have passwords in the GIT repository.
