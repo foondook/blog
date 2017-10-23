@@ -11,7 +11,7 @@ tags:
 - Deployment
 ---
 
-This post is an update of a previous blog post about automatically deploy an Web App to Azure App Service using FAKE. But instead of FAKE, I'm now going to use CAKE.
+This post is an update version of a previous blog post about automatically deploy an Web App to Azure App Service using FAKE. But instead of FAKE, I'm now going to use CAKE here.
 
 ### Intro
 
@@ -27,60 +27,128 @@ You will find a more detailed tutorial here: [Continuous deployment using GIT in
 
 This is pretty cool, isn't it?
 
-Sure, it is. But only if it is a small website, a small uncritical app or a demo to show the easy deployment to azure. The deployment of this blog is set up in this way. With this kind of deployment, the build of the application is done on the Azure Web App with [Kudu](https://github.com/projectkudu/kudu) which is working great. 
+Sure, it is. But only if it is a small website, a small uncritical app or a demo to show the easy deployment to azure. The deployment of this blog is set up in this way and the deployment of my user groups website. With this kind of deployment, the build of the application is done on the Azure Web App with [Kudu](https://github.com/projectkudu/kudu) which is working great. 
 
-But I miss something here, if I want to deploy bigger and more complex web application.
+But I miss something here, if I want to deploy a bigger and more complex web application.
 
-How can I run my unit tests? What about email notifications on broken build? What if you need some special tasks while or before building the application?
+* How can I run my unit tests? 
+* What about email notifications on broken build? 
+* What if you need some special tasks during, after or before building the application?
 
-You can [add a batch or a powershell file](https://github.com/projectkudu/kudu/wiki/Customizing-deployments) to manipulate Kudu process to do all this things. But there is too much to configure. I have to write my own scripts to change the AssemblyInfos, to send out any email notification, to create test reports and so on. I would write all the things, a real build server can already do for me.
+You can [add a batch or a powershell file](https://github.com/projectkudu/kudu/wiki/Customizing-deployments) to manipulate the Kudu process to do all this things. But there is a little bit too much to configure. I have to write my own scripts to change the AssemblyInfos, to send out any email notification, to create test reports and so on. You would write all the things, a real build server can already do for you.
 
 ## Why a build server?
 
 I prefer to have a separate real build server which does the whole job. This are almost all tasks I usually need to do on a continuous deployment job: 
 
-- I need to restore the packages first to make the builds baster
-- I need to set the AssemblyInfo for all included projects. 
-- I need to build the complete solution
-- I need to run the unit test and possibly some integration tests
-- I need any deployment
+- clone the repository
+- define the configuration environment
+- configure the environment for the solution 
+- restore the packages first to make the builds faster
+- set the AssemblyInfo for all included projects. 
+- build the complete solution
+- run the unit test and possibly some integration tests
+- any kind of deployment
   - a web application to an Azure Web App
   - a library to NuGet
   - a setup for a desktop application
-- I need to create a report of the build and test results
-- I want to send an email notification in case of errors
-- I want to see a build history
-- I want to see the entire build output of a broken build
-  Dependent on the type of the project there are some more or maybe less tasks to do.
+- create a report of the build and test results
+- send an email notification in case of errors
+- save the build history, artifacts and logs
 
-I prefer [Jenkins](https://jenkins-ci.org/) as a build server but this doesn't really matter. Any other real build server can also do this this work.
+Dependent on the type of the project there are some more or maybe less tasks to do.
 
-## What is CAKE?
-
-I recently wrote a small introduction about CAKE in that post.
+I prefer [Jenkins](https://jenkins-ci.org/) as a build server but this doesn't really matter. Any other real build server can do that work for you. You just need to configure a little bit.
 
 ## Using CAKE
 
-To reduce the complexity on the build server itself, it only does the scheduling and reporting part and it clones the sources from the repository. The only thing it really executes is a small PowerShell file which calls the [CAKE script](http://cakebuild.net). Since a few months CAKE gets my favorite build script language. CAKE is an easy to use DSL for build task written in C# Script. MsBuild also works fine, but it is not as easy as CAKE. I used MsBuild in the past to do the same thing.
+### What is CAKE?
 
-> In my case Jenkins only fetches the sources, executes the CAKE script and does the reporting and notification stuff.
+I recently wrote a small introduction about CAKE in that post. 
 
-CAKE does the other tasks including the deployment. I only want to show how the deployment looks like with CAKE. Please have a look into the [CAKE documentation](http://cakebuild.net/dsl/) to learn more about it. There are many examples and a sample script online. 
+### Why something like CAKE?
 
-I add a new PowerShell build action on the Build Server and call the build.ps1 inside. The build.ps1 bootstraps CAKE loads the needed dependencies and finally starts the build.cake file, which is the actual build script. I pass arguments to the script in two different ways:
+Because there are different kind of Tasks to do. Generic Tasks which needs to be executed for more or less all kind of applications. Application specific Tasks, which are mostly individual for every different build. You can simplify the configuration effort on the build server to just do the generic stuff and by moving the responsibility for the application specific stuff to the developers. Because who knows best about building and testing the application than the developers who build it?
+
+By dividing the Tasks into this two types of tasks, you'll get two new lists. The first one is not directly related to the application and contains just generic tasks that need to be done for almost all kind of applications
+
+* clone the repository
+* define the configuration environment
+* [Execute the moved out build, test, and deployment steps]
+* create a report of the build and test results
+* send an email notification in case of errors
+* save the build history, artifacts and logs
+
+The second list is application specific.
+
+- I want to configure the environment for the solution 
+- I need to restore the packages first to make the builds faster
+- I need to set the AssemblyInfo for all included projects. 
+- I need to build the complete solution
+- I need to run the unit test and possibly some integration tests
+- I need any kind of deployment
+  - a web application to an Azure Web App
+  - a library to NuGet
+  - a setup for a desktop application
+
+For the C# developers it is easier to work on the application specific tasks, if this are defined in C# and visible in the Visual Studio.
+
+That is why I prefer this separation. The first list of tasks will be configured on the build server and the second list of tasks will be scripted in code.
+
+In this case it is CAKE, that actually is a C# script. Since a few months CAKE gets my favorite build script language. CAKE is an easy to use DSL for build task written in C# Script. The CAKE script should be a part of the solution, like the NuGet.config, the solution file and so on. I usually also create a dedicated solution folder called `.build`which contains the build scripts. 
+
+The Build server will call a small PowerShell script to bootstrap CAKE and executes the actual CAKE script.
+
+In this post I only want to show how the deployment looks like with CAKE. Please have a look into the [CAKE documentation](http://cakebuild.net/dsl/) to learn more about it. There are many examples and a sample script online. 
+
+### Add CAKE to the build server
+
+On the build server, I add a new PowerShell build action and call the `build.ps1` inside. The `build.ps1` bootstraps CAKE loads the needed dependencies and finally starts the `build.cake` file, which is the actual build script. I pass arguments to the script in two different ways:
 
 * CAKE specific arguments like the build configuration, build number will be passed as command line arguments
-* Build specific arguments gets passed as environment variables. This makes the PowerShell build action on the build server more readable. Otherwise the call of the build.ps1 could get too long and hard to maintain.
+* Build specific arguments gets passed as environment variables. This makes the PowerShell build action on the build server more readable. Otherwise the call of the `build.ps1` could get too long and too hard to maintain.
 
 ~~~ powershell
 @ENV.PUBLISH_PROFILE = ""
 @ENV.PUBLISH_PASSWORD = ""
-.\build.ps1 -c=release -buildnumber=@ENV.BUILD_NUMBER
+.\build.ps1 -configuration Release -ScriptArgs '-buildnumber="@ENV.BUILD_NUMBER" -environment="Production"'
 ~~~
 
 In the build script itself, it doesn't really matter where the arguments came from. We just need to know whether to read them from the command line arguments or from the environment variables.
 
+## Setup a demo project
+
+To show this approach I quickly create a small demo solution that contains two projects: A ASP.NET Core web application and a unit test library. I also add CAKE, setup the mentioned solution folder
+
 ## The build script
+
+As already mentioned before, the CAKE script is just a C# file with a different file extension. 
+
+Let's see how we get the passed arguments 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 This is how the build task to deploy a ASP.NET app in FAKE looks like
 
