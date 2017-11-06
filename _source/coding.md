@@ -19,7 +19,7 @@ This library is based on .NET Standard 2.0 preview 2
 
 The is a pretty small library just to get the GraphQl running as middleware in ASP.NET Core projects. This project based on the GraphQL-dotnet library.
 
-This library is based on .NET Standard 1.4 yet and will be updated to .NET Standard 2.0. 
+This library is based on .NET Standard 2.0 
 
 ## CQS Library
 

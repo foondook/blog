@@ -13,7 +13,7 @@ Not all the stuff I write, gets published in this blog. Sometimes I write articl
 [http://www.dotnetpro.de/articles/onlinearticle4788.aspx](www.dotnetpro.de/articles/onlinearticle4788.aspx)
 
 
-.NET vs. Node.js: Um die Ehre (dotnetpro 02/2014, Seite 114)<br/>
+.NET vs. Node.js: Um die Ehre (dotnetpro 02/2014, Seite 114)
 [http://www.dotnetpro.de/articles/onlinearticle4752.aspx](www.dotnetpro.de/articles/onlinearticle4752.aspx)
 
 
