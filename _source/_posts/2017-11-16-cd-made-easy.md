@@ -99,3 +99,144 @@ Only the execution performance is slower compared with a compiled program, but t
 
 The other good things about FAKE or CAKE are, because it is build on top of runtime that supports .NET DLLs, you are able to develop and to use custom and compiled code  written in C#. If you miss a feature and cannot find it in the community, built it yourself and (hopefully) contribute it to the community. I didn't need to do it until now. 
 
+## Are there any things scripts cannot do?
+
+Sure. There are also some aspects scripts are not responsible for. All the things around the execution of the already mentioned tasks, should be done on a build server:
+
+* Scheduling / triggering
+  * scheduled on a regular base 
+  * or triggered by an external system, e.g. the SCM
+* Fetching the sources from the SCM
+* Executing the build script
+* Analyzing the build log
+  * search for bad return coded
+  * specific keywords, etc.
+* Report the build state 
+  * build time
+  * build and test quality
+* notify the relevant persons
+  * at least notify about quality issues
+
+These are the tasks that son't need to be done on the developer machine. And FAKE or CAKE do a nice output and a nice summery too.
+
+> I had a nice experience with an early version of Jenkins, which parses the output for the standalone keyword "error" or "failed". I got a broken build but a successful execution of all build tasks. The build was good, the tests were successful, even the deployment ends without any error. But one single test wrote that keyword to the console. And Jenkins set the complete build to the failing state because of that. This is fixed now. 
+
+## Ho do I install and execute CAKE?
+
+Installing a CAKE script is pretty easy. Open a PowerShell and CD to the solution folder or any other folder where you want to run the CAKE scripts. Execute this line in the PowerShell console:
+
+~~~ powershell
+Invoke-WebRequest https://cakebuild.net/download/bootstrapper/windows -OutFile build.ps1
+~~~
+
+This just downloads the latest build.ps1 to that folder. This file is the bootstrapper for CAKE. It checks the environment, installs CAKE if needed and executes the build script.
+
+Add a new file called build.cake, add that contend and safe the file
+
+~~~ csharp
+var target = Argument("target", "Default");
+
+Task("Default")
+    .Does(() =>
+    {
+      Information("Hello World!");
+    });
+
+RunTarget(target);
+~~~
+
+This is C# Script executed on Roslyn. CAKE will automatically add the most important dependencies. There is also a preprocessor running, which installs dependencies on demand.
+
+Run that script in the PowerShell console by just calling the build.ps1
+
+~~~ powershell
+.\build.ps1
+~~~
+
+That is the first execution of a "Hello World!" build script. The first call takes a little more time, because it installs all the needed stuff. After that it compiles and executes the CAKE script, Task, by Task.
+
+## How does a CAKE script look like?
+
+The first Hello World example shows you a little bit. But let's have a look into a complete build, test and deployment script for a ASP.NET Core application.
+
+~~~ csharp
+#addin "nuget:https://api.nuget.org/v3/index.json?package=Cake.WebDeploy"
+var target = Argument("target", "Default");
+
+var siteName = Argument("site-name", "cake-demo");
+var deployPassword = EnvironmentVariable("DEPLOY_PASSWORD");
+var publishDir = "./Published/";
+
+Task("Clean")
+	.Does(() => 
+	{
+		CleanDirectory(publishDir);
+		DotNetCoreClean("./aspnetcore-cake.sln");
+	});
+
+Task("Restore")
+	.IsDependentOn("Clean")
+	.Does(() => 
+	{
+		DotNetCoreRestore("./aspnetcore-cake.sln");
+	});
+
+Task("Build")
+	.IsDependentOn("Restore")
+	.Does(() => 
+	{
+		DotNetCoreBuild("./aspnetcore-cake.sln");
+	});
+
+Task("Test")
+	.IsDependentOn("Build")
+    .Does(() =>
+	{
+		var projectFiles = GetFiles("./*.Tests/*.csproj");
+		foreach(var file in projectFiles)
+		{
+			DotNetCoreTest(file.FullPath);
+		}
+	});
+
+Task("Publish")
+	.IsDependentOn("Test")
+	.Does(() => 
+	{
+		var settings = new DotNetCorePublishSettings
+		{
+			OutputDirectory = publishDir
+		};
+		DotNetCorePublish("./ProjectToBuild/ProjectToBuild.csproj", settings);
+	});
+
+Task("Deploy")
+	.IsDependentOn("Publish")
+    .Does(() =>
+    {
+        DeployWebsite(new DeploySettings()
+        {
+            SourcePath = publishDir,
+            SiteName = siteName,
+            ComputerName = "https://" + siteName + ".scm.azurewebsites.net:443/msdeploy.axd?site=" + siteName,
+            Username = "$" + siteName,
+            Password = deployPassword
+        });
+    });
+
+Task("Default")
+	.IsDependentOn("Deploy")
+	.Does(() =>
+	{
+	  Information("Congratulations, your build is done!");
+	});
+
+RunTarget(target);
+~~~
+
+The first line is a pre-processor directive to install Cake.WebDeploy from NuGet. This is an Add-In needed in the second last Task to publish the application to Microsoft Azure.
+
+
+
+
+
