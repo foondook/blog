@@ -25,7 +25,11 @@ Because AppVeyor is a third party service, you need to create a separate account
 
 ## Set-up the build
 
-Once the account is created you are able to create the first build within the AppVeyor portal.
+Once the account is created you are able to create the first build within the AppVeyor portal. Logon to ci.appveyor.com and create a new project. Select the SCM provider (GitHub, BitBucket, VSTS, etc.) and the repository you want to build. In my case it is the https://github.com/JuergenGutsch/unittesting-aspnetcore.
+
+![](../img/appveyor-build/new-project.png)
+
+Once the project is created you need edit the settings
 
 
 
