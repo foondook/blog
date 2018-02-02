@@ -16,7 +16,7 @@ I recently read a interesting tweet by Glenn Block about a GraphQL app running o
 
 [![]({{site.baseurl}}/img/graphql-dotnet/gblocktweet.PNG)](https://twitter.com/gblock/status/958643692247564294)
 
-It is impressive to run a .NET Core app in Linux on Windows, which is not a Virtual Machine on Windows. I never hat the chance to try that. I just played a little bit with the Linux Subsystem for Windows. The second that came to mind was: "wow, did he use my GraphQL Middleware library or something else?"
+It is impressive to run a .NET Core app in Linux on Windows, which is not a Virtual Machine on Windows. I never had the chance to try that. I just played a little bit with the Linux Subsystem for Windows. The second that came to mind was: "wow, did he use my GraphQL Middleware library or something else?"
 
 He uses different libraries, as you can see in his repository on GitHub: [https://github.com/glennblock/orders-graphql](https://github.com/glennblock/orders-graphql) 
 
